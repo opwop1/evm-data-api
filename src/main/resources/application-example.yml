@@ -28,6 +28,9 @@ spring:
 
 # 阿里云 OSS —— 用于玩家头像、地图图标等静态资源存储
 aliyun-oss:
+  # 是否启用 OSS；未配置或 false 时不创建 OSS 客户端、不执行用到云存储的业务（如 TmpFileSyncJob）
+  # 要启用 TMP 文件同步，需在 dev/prod 配置中显式设为 true
+  enabled: false
   # 访问域名，按 Bucket 所在区域填写，如 oss-cn-beijing.aliyuncs.com
   endpoint: <oss-endpoint>
   # RAM 用户的 AccessKey ID
