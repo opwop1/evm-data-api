@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="link.vtcm.mapper.OnlinePlayerHistoryMapper">
+    <update id="createPartition">
+        ALTER TABLE `game_online_player_history`
+        ADD PARTITION (
+            PARTITION ${partition} VALUES LESS THAN (#{date})
+        );
+    </update>
+
+    <insert id="insertBatch">
+        INSERT INTO game_online_player_history (
+            `tmp_id`,
+            `server_id`,
+            `axis_x`,
+            `axis_y`,
+            `heading`,
+            `distance`,
+            `update_time`
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.tmpId},
+                #{item.serverId},
+                #{item.axisX},
+                #{item.axisY},
+                #{item.heading},
+                #{item.distance},
+                #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+</mapper>

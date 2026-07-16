@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="link.vtcm.mapper.ServerMapper">
+    <insert id="insertBatch">
+        INSERT INTO
+            game_server
+        VALUES
+            <foreach collection="list" item="server" separator=",">
+                (
+                    #{server.serverId},
+                    #{server.serverIp},
+                    #{server.serverPort},
+                    #{server.serverName},
+                    #{server.shortName},
+                    #{server.isOnline},
+                    #{server.playerCount},
+                    #{server.queueCount},
+                    #{server.maxPlayer},
+                    #{server.speedLimiterEnable},
+                    #{server.collisionsEnable},
+                    #{server.policeCarEnable},
+                    #{server.afkEnable},
+                    #{server.updateTime}
+                )
+            </foreach>
+    </insert>
+</mapper>

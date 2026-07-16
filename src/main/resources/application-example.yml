@@ -1,0 +1,86 @@
+# =============================================================================
+# 示例配置文件
+# 用法：复制本文件改名为 application-dev.yml / application-prod.yml，
+#       或直接通过 --spring.profiles.active=example 加载后替换其中的占位符。
+# 所有 <xxx> 均为需要你填写的真实内容。
+# =============================================================================
+
+spring:
+  datasource:
+    # MySQL 数据库连接地址。<mysql-host> 为主机（本地填 localhost），<mysql-db> 为库名
+    url: jdbc:mysql://<mysql-host>:3306/<mysql-db>?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
+    # 数据库用户名
+    username: <mysql-username>
+    # 数据库密码
+    password: <mysql-password>
+  data:
+    redis:
+      # Redis 主机地址（本地默认 localhost）
+      host: <redis-host>
+      # Redis 访问密码，未设置密码则留空
+      password: <redis-password>
+      # 连接与命令超时时间
+      timeout: 10s
+      # 是否启用 SSL（部分云 Redis 强制要求）
+      ssl.enabled: false
+      # 使用的 Redis 数据库编号（0~15）
+      database: 0
+
+# 阿里云 OSS —— 用于玩家头像、地图图标等静态资源存储
+aliyun-oss:
+  # 访问域名，按 Bucket 所在区域填写，如 oss-cn-beijing.aliyuncs.com
+  endpoint: <oss-endpoint>
+  # RAM 用户的 AccessKey ID
+  access-key: <oss-access-key>
+  # RAM 用户的 AccessKey Secret
+  secret-key: <oss-secret-key>
+  # 存储空间（Bucket）名称
+  bucket-name: <oss-bucket>
+
+# AI 能力 —— 用于封禁原因翻译等（OpenAI 兼容接口，默认接入 OpenRouter）
+ai:
+  # 接口地址
+  base-url: https://openrouter.ai/api/v1
+  # API 密钥
+  api-key: <openrouter-api-key>
+
+# 百度翻译 —— 用于把英文封禁原因翻译为中文（https://fanyi-api.baidu.com/）
+baidu-translate:
+  # 百度翻译开放平台 APP ID
+  app-id: <baidu-app-id>
+  # 密钥
+  key: <baidu-key>
+
+# DepotDownloader 工具配置 —— 仅 "TMP 版本同步" 定时任务依赖，
+# 用于从 Steam 下载游戏主程序并读取实际游戏版本号。
+# 关闭后 TMP 版本同步任务仍会执行（照常更新 TMP 版本与兼容游戏版本），
+# 仅跳过实际游戏版本的获取（该字段保留数据库原值）
+depot-downloader:
+  # 是否启用（关闭后仅跳过实际游戏版本获取，不影响 TMP 版本同步）
+  enabled: false
+  # DepotDownloader 所在目录
+  path: /home/depot-downloader
+  # 可执行文件名（Windows 下为 DepotDownloader.exe）
+  execute: DepotDownloader
+  # exiftool 可执行文件路径，用于读取游戏 exe 的版本号
+  exiftool: exiftool
+  # Steam 应用 ID（Euro Truck Simulator 2 = 227300）
+  app-id: 227300
+  # Steam Depot ID（227302）
+  depot-id: 227302
+  # Steam 账号（需拥有 ETS2）
+  steam-username: <steam-username>
+  # Steam 密码
+  steam-password: <steam-password>
+
+# 限流代理配置 —— 调用 TruckersMP / TruckersMap 等外部 API 容易触发频率限制，
+# 可经由代理节点分流；不需要代理时把 enabled 改为 false 即可
+forest:
+  rate-limit-proxy:
+    path-proxy:
+      # 是否启用路径代理
+      enabled: true
+      # 代理节点地址列表，按限流策略轮询使用
+      urls:
+        - <proxy-url-1>
+        - <proxy-url-2>

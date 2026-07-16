@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="link.vtcm.mapper.PlayerMileageMapper">
+    <insert id="insertBatch">
+        INSERT INTO game_player_mileage (
+            id,
+            tmp_id,
+            tmp_name,
+            server_id,
+            axis_x,
+            axis_y,
+            heading,
+            distance,
+            today_distance,
+            update_time
+        ) VALUES
+            <foreach collection="list" item="item" separator=",">
+                (
+                    #{item.id},
+                    #{item.tmpId},
+                    #{item.tmpName},
+                    #{item.serverId},
+                    #{item.axisX},
+                    #{item.axisY},
+                    #{item.heading},
+                    #{item.distance},
+                    #{item.todayDistance},
+                    #{item.updateTime}
+                )
+            </foreach>
+    </insert>
+    
+    <update id="updateBatch">
+        UPDATE game_player_mileage gpm
+        JOIN (
+            <foreach collection="list" item="item" separator="UNION ALL">
+                SELECT 
+                    #{item.id} AS id,
+                    #{item.tmpName} AS tmp_name,
+                    #{item.serverId} AS server_id,
+                    #{item.axisX} AS axis_x,
+                    #{item.axisY} AS axis_y,
+                    #{item.heading} AS heading,
+                    #{item.distance} AS distance,
+                    #{item.todayDistance} AS today_distance,
+                    #{item.updateTime} AS update_time
+            </foreach>
+        ) gpmu ON gpmu.id = gpm.id
+        SET 
+            gpm.tmp_name = gpmu.tmp_name,
+            gpm.server_id = gpmu.server_id,
+            gpm.axis_x = gpmu.axis_x,
+            gpm.axis_y = gpmu.axis_y,
+            gpm.heading = gpmu.heading,
+            gpm.distance = gpmu.distance,
+            gpm.today_distance = gpmu.today_distance,
+            gpm.update_time = gpmu.update_time
+    </update>
+    
+    <select id="selectMileageRanking" resultType="link.vtcm.domain.vo.MileageRankingVO">
+        SELECT 
+            tmp_id AS tmpId,
+            tmp_name AS tmpName,
+            <choose>
+                <when test="rankingType == 1">
+                    distance AS distance,
+                    ROW_NUMBER() OVER (ORDER BY distance DESC, tmp_id ASC) AS ranking
+                </when>
+                <when test="rankingType == 2">
+                    today_distance AS distance,
+                    ROW_NUMBER() OVER (ORDER BY today_distance DESC, tmp_id ASC) AS ranking
+                </when>
+            </choose>
+        FROM game_player_mileage
+        WHERE 
+            <choose>
+                <when test="rankingType == 1">
+                    distance > 0
+                </when>
+                <when test="rankingType == 2">
+                    today_distance > 0
+                </when>
+            </choose>
+        ORDER BY 
+            <choose>
+                <when test="rankingType == 1">
+                    distance DESC, tmp_id ASC
+                </when>
+                <when test="rankingType == 2">
+                    today_distance DESC, tmp_id ASC
+                </when>
+            </choose>
+        <if test="rankingCount != null and rankingCount > 0">
+            LIMIT #{rankingCount}
+        </if>
+    </select>
+    
+    <select id="selectPlayerRanking" resultType="link.vtcm.domain.vo.MileageRankingVO">
+        SELECT 
+            tmp_id AS tmpId,
+            tmp_name AS tmpName,
+            distance,
+            ranking
+        FROM (
+            SELECT 
+                tmp_id,
+                tmp_name,
+                <choose>
+                    <when test="rankingType == 1">
+                        distance,
+                        ROW_NUMBER() OVER (ORDER BY distance DESC, tmp_id ASC) AS ranking
+                    </when>
+                    <when test="rankingType == 2">
+                        today_distance AS distance,
+                        ROW_NUMBER() OVER (ORDER BY today_distance DESC, tmp_id ASC) AS ranking
+                    </when>
+                </choose>
+            FROM game_player_mileage
+            WHERE 
+                <choose>
+                    <when test="rankingType == 1">
+                        distance > 0
+                    </when>
+                    <when test="rankingType == 2">
+                        today_distance > 0
+                    </when>
+                </choose>
+        ) ranked
+        WHERE tmp_id = #{tmpId}
+    </select>
+    
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="link.vtcm.mapper.OnlinePlayerMapper">
+    <insert id="insertBatch">
+        INSERT INTO
+            game_online_player
+        VALUES
+            <foreach collection="list" item="player" separator=",">
+                (
+                    #{player.tmpId},
+                    #{player.tmpName},
+                    #{player.serverPlayerId},
+                    #{player.serverId},
+                    #{player.axisX},
+                    #{player.axisY},
+                    #{player.heading},
+                    #{player.updateTime}
+                )
+            </foreach>
+    </insert>
+</mapper>

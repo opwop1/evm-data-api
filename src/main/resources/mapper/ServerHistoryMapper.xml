@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="link.vtcm.mapper.ServerHistoryMapper">
+    <insert id="insertBatch">
+        INSERT INTO
+            `game_server_history`
+        VALUES
+            <foreach collection="list" item="item" separator=",">
+                (
+                    #{item.id},
+                    #{item.serverId},
+                    #{item.playerCount},
+                    #{item.updateTime}
+                )
+            </foreach>
+    </insert>
+
+    <select id="findByServerIdListAndTimeRange" resultType="link.vtcm.domain.ServerHistory">
+        SELECT
+            *
+        FROM
+            `game_server_history`
+        WHERE
+            server_id IN
+            <foreach item="item" collection="serverIdList" separator="," close=")" open="(" index="">
+                #{item}
+            </foreach>
+            <if test="startTime != null">
+                AND update_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND update_time &lt;= #{endTime}
+            </if>
+        ORDER BY
+            update_time
+    </select>
+</mapper>

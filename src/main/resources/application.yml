@@ -1,0 +1,29 @@
+server:
+  port: 9100
+
+# MyBatis-Plus配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  mapper-package: link.vtcm.mapper
+  global-config:
+    db-config:
+      column-format: "`%s`"
+      id-type: assign_id
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    druid:
+      initial-size: 8
+      max-active: 16
+      max-wait: 30000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 30000
+
+# ForestHTTP客户端配置
+forest:
+  # 打开或关闭日志
+  log-enabled: false
+  # 注册拦截器；是否启用限流代理、使用哪些代理节点由各环境配置 application-{profile}.yml 中的 forest.rate-limit-proxy 控制
+  interceptors:
+    - link.vtcm.forest.interceptor.RateLimitProxyInterceptor
