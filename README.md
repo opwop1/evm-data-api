@@ -58,25 +58,56 @@ src/main/java/link/vtcm
 
 ### 环境要求
 
-- **JDK 17** 及以上
-- **Maven 3.6+**
-- **MySQL 8.x**
-- **Redis** 6.x 及以上
+| 依赖 | 版本 | 说明 |
+|------|------|------|
+| JDK | 17+ | 必须 |
+| Maven | 3.6+ | 构建 |
+| MySQL | 8.0+ | 字符集须为 `utf8mb4` |
+| Redis | 6.x+ | 缓存 |
 
-### 构建与运行
+### 1. 准备数据库
+
+先创建数据库（使用 `utf8mb4`，库名需与配置文件中的数据源一致）：
+
+```sql
+CREATE DATABASE IF NOT EXISTS `<your-database>` DEFAULT CHARACTER SET utf8mb4;
+USE `<your-database>`;
+```
+
+再依次导入 `sql/` 目录下的脚本：
+
+| 顺序 | 文件 | 必需 | 说明 |
+|------|------|:----:|------|
+| ① | `schema.sql` | 是 | 14 张表结构（含 `game_online_player_history` 按天 RANGE 分区） |
+| ② | `data.sql` | 可选 | 地图标点（`map_marker`）与系统配置（`sys_config`）初始数据 |
+| ③ | `game_player_mileage-2026-07-17.zip` | 可选 | 截止 2026-07-17 的玩家里程扩展数据 |
 
 ```bash
-# 1. 克隆仓库
+# ① 建表
+mysql -u root -p <your-database> < sql/schema.sql
+# ② 基础数据
+mysql -u root -p <your-database> < sql/data.sql
+# ③（可选）里程扩展数据：解压后导入
+unzip sql/game_player_mileage-2026-07-17.zip -d sql/
+mysql -u root -p <your-database> < sql/game_player_mileage.sql
+```
+
+> 💡 `schema.sql` 已预建 14 天分区（基准 2026-07-17），部署后由 `DBJob` 每日 00:00 自动续建次日分区。若部署日期已超出预建范围，请参照 `DBJob` 的建分区逻辑补建后再启动。
+
+### 2. 构建与运行
+
+```bash
+# 克隆仓库
 git clone https://github.com/<your-name>/evm-data-api.git
 cd evm-data-api
 
-# 2. 构建（跳过测试）
+# 构建（跳过测试）
 mvn clean package -Dmaven.test.skip=true -U -B
 
-# 3. 方式一：Maven 直接运行
+# 方式一：Maven 直接运行
 mvn spring-boot:run
 
-# 3. 方式二：通过 jar 运行
+# 方式二：通过 jar 运行
 java -jar target/evm-data-api.jar
 ```
 
@@ -101,8 +132,6 @@ java -jar target/evm-data-api.jar
 > ⚠️ **安全提示**：`application-example.yml` 中均为占位符。请勿将含真实凭据的本地配置文件提交到仓库，建议将其加入 `.gitignore`。
 
 > 💡 `depot-downloader.enabled` 默认为 `false`：关闭后「TMP 版本同步」任务仍会照常更新 TMP 版本与兼容游戏版本，仅跳过依赖 Steam 账号的实际游戏版本获取。
-
-数据库表结构请根据 `domain/` 目录下的实体类（如 `Player`、`Server`、`OnlinePlayer`、`PlayerMileage` 等）自行创建。
 
 ## 📡 API 接口
 
